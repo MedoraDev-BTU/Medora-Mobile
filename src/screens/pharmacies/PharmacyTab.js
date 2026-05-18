@@ -1,115 +1,341 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
-import MapView, { Marker, Callout } from 'react-native-maps';
-import { useNavigation } from '@react-navigation/native';
+import React, { useState } from 'react';
+import { 
+  View, 
+  Text, 
+  StyleSheet, 
+  SafeAreaView, 
+  TouchableOpacity, 
+  TextInput,
+  Dimensions
+} from 'react-native';
 
-// This data simulates what you will eventually pull from 'eczaneler' and 'klinikler' [cite: 1, 43, 78]
-const places = [
-  {
-    id: 'c1',
-    name: "Medora Kliniği",
-    address: "Bağcılar, İstanbul",
-    hours: "Pzt–Cmt 09:00–18:00",
-    type: "clinic",
-    lat: 41.039,
-    lng: 28.856,
-  },
-  {
-    id: 'p1',
-    name: "Yeşilyurt Eczanesi",
-    address: "Bağcılar, İstanbul",
-    hours: "Nöbetçi • 24 saat", // Matches your 'nobetci_eczaneler' logic [cite: 78, 82]
-    type: "pharmacy",
-    lat: 41.041,
-    lng: 28.862,
-  },
-];
+const { width, height } = Dimensions.get('window');
 
-export default function PharmacyTab() {
-  const navigation = useNavigation();
+export default function PharmaciesScreen({ navigation }) {
+  const [searchText, setSearchText] = useState("");
 
   return (
-    <View style={styles.container}>
-      <MapView
-        style={styles.map}
-        initialRegion={{
-          latitude: 41.040,
-          longitude: 28.859,
-          latitudeDelta: 0.02,
-          longitudeDelta: 0.02,
-        }}
-      >
-        {places.map((place) => (
-          <Marker
-            key={place.id}
-            coordinate={{ latitude: place.lat, longitude: place.lng }}
-            pinColor={place.type === 'pharmacy' ? 'green' : 'red'}
-          >
-            {/* Callout is the info bubble that appears when you tap a marker */}
-            <Callout tooltip onPress={() => {}}>
-              <View style={styles.card}>
-                <Text style={styles.title}>{place.name}</Text>
-                <Text style={styles.sub}>{place.address}</Text>
-                <Text style={styles.sub}>{place.hours}</Text>
+    <SafeAreaView style={styles.container}>
+      
+      {/* 🗺️ HARİTA BÖLÜMÜ (Yer Tutucu) */}
+      {/* İleride buraya react-native-maps eklenecek */}
+      <View style={styles.mapBackground}>
+        
+        {/* Temsili Mavi Eczane Pinleri */}
+        <View style={[styles.bluePin, { top: '30%', left: '75%' }]}>
+          <Text style={styles.pinIcon}>🏥</Text>
+        </View>
+        <View style={[styles.bluePin, { top: '55%', left: '60%' }]}>
+          <Text style={styles.pinIcon}>🏥</Text>
+        </View>
 
-                <View style={styles.row}>
-                  {place.type === 'clinic' && (
-                    <TouchableOpacity
-                      style={styles.btnPrimary}
-                      onPress={() => navigation.navigate('Home', { screen: 'AppointmentList' })}
-                    >
-                      <Text style={styles.btnPrimaryText}>Randevu Al</Text>
-                    </TouchableOpacity>
-                  )}
-                  <TouchableOpacity
-                    style={styles.btnSecondary}
-                    onPress={() => console.log("Detail for:", place.id)}
-                  >
-                    <Text style={styles.btnSecondaryText}>Detay</Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            </Callout>
-          </Marker>
-        ))}
-      </MapView>
-    </View>
+        {/* Aktif/Seçili Kırmızı Nöbetçi Pini */}
+        <View style={styles.redPinContainer}>
+          <View style={styles.redPinBubble}>
+            <Text style={styles.redPinIcon}>💊</Text>
+            <Text style={styles.redPinText}>Nöbetçi: Merkez Eczanesi</Text>
+          </View>
+          <View style={styles.redPinTriangle} />
+        </View>
+
+      </View>
+
+      {/* 🔍 ÜST ARAMA VE FİLTRE ÇUBUĞU */}
+      <View style={styles.topOverlay}>
+        <View style={styles.searchBar}>
+          <Text style={styles.searchIcon}>🔍</Text>
+          <TextInput 
+            style={styles.searchInput}
+            placeholder="Şehir ve İlçe Seç..."
+            placeholderTextColor="#71787e99"
+            value={searchText}
+            onChangeText={setSearchText}
+          />
+          <TouchableOpacity style={styles.filterButton}>
+            <Text style={styles.filterIcon}>⚙️</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Sağ Taraf Harita Kontrol Butonları */}
+        <View style={styles.mapControls}>
+          <TouchableOpacity style={styles.controlButton}>
+            <Text style={styles.controlIcon}>🎯</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.controlButton}>
+            <Text style={styles.controlIcon}>📚</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+
+      {/* 💊 SEÇİLİ ECZANE KARTI (Alt Kısım) */}
+      {/* İsteğine uygun olarak yol tarifi ok butonu KALDARILMIŞTIR */}
+      <View style={styles.pharmacyCardOverlay}>
+        <View style={styles.pharmacyCard}>
+          
+          <View style={styles.cardHeader}>
+            <View style={styles.badgeContainer}>
+              <Text style={styles.badgeText}>ŞU AN AÇIK (NÖBETÇİ)</Text>
+            </View>
+            <Text style={styles.pharmacyName}>Merkez Eczanesi</Text>
+            <Text style={styles.pharmacyAddress}>📍 850m • Barbaros Bulvarı No:42</Text>
+          </View>
+
+          <View style={styles.actionButtonsRow}>
+            <TouchableOpacity style={styles.callButton}>
+              <Text style={styles.callButtonText}>📞 Ara</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.shareButton}>
+              <Text style={styles.shareButtonText}>↗️ Paylaş</Text>
+            </TouchableOpacity>
+          </View>
+
+        </View>
+      </View>
+
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff'
+    backgroundColor: '#F8F9FF',
   },
-  map: {
-    width: Dimensions.get('window').width,
-    height: Dimensions.get('window').height,
+  mapBackground: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: '#D4E6E2', // Temsili harita arka plan rengi
   },
-  card: {
-    backgroundColor: '#fff',
+  bluePin: {
+    position: 'absolute',
+    width: 36,
+    height: 36,
+    backgroundColor: '#9accf3',
+    borderRadius: 18,
+    borderWidth: 2,
+    borderColor: 'white',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  pinIcon: {
+    fontSize: 16,
+  },
+  redPinContainer: {
+    position: 'absolute',
+    top: '42%',
+    left: '20%',
+    alignItems: 'center',
+  },
+  redPinBubble: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#ba1a1a',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
     borderRadius: 12,
-    padding: 12,
-    width: 200,
-    borderWidth: 0.5,
-    borderColor: '#ccc',
+    borderWidth: 2,
+    borderColor: 'white',
+    shadowColor: '#ba1a1a',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    elevation: 4,
   },
-  title: { fontSize: 14, fontWeight: '600', marginBottom: 4 },
-  sub: { fontSize: 12, color: '#666', marginBottom: 2 },
-  row: { flexDirection: 'row', gap: 6, marginTop: 8 },
-  btnPrimary: {
-    backgroundColor: '#2D9CDB',
-    borderRadius: 8,
-    paddingVertical: 5,
+  redPinIcon: {
+    fontSize: 14,
+    marginRight: 6,
+  },
+  redPinText: {
+    color: 'white',
+    fontSize: 13,
+    fontWeight: 'bold',
+  },
+  redPinTriangle: {
+    width: 0,
+    height: 0,
+    backgroundColor: 'transparent',
+    borderStyle: 'solid',
+    borderLeftWidth: 8,
+    borderRightWidth: 8,
+    borderBottomWidth: 10,
+    borderLeftColor: 'transparent',
+    borderRightColor: 'transparent',
+    borderBottomColor: '#ba1a1a',
+    transform: [{ rotate: '180deg' }],
+    marginTop: -2,
+  },
+  topOverlay: {
+    position: 'absolute',
+    top: 50,
+    left: 20,
+    right: 20,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+  },
+  searchBar: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    height: 52,
+    borderRadius: 26,
+    paddingHorizontal: 16,
+    marginRight: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    elevation: 5,
+  },
+  searchIcon: {
+    fontSize: 18,
+    marginRight: 10,
+    color: '#71787e',
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 15,
+    color: '#0d1c2f',
+  },
+  filterButton: {
+    padding: 4,
+  },
+  filterIcon: {
+    fontSize: 18,
+  },
+  mapControls: {
+    alignItems: 'center',
+    gap: 12,
+  },
+  controlButton: {
+    width: 44,
+    height: 44,
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    borderRadius: 22,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  controlIcon: {
+    fontSize: 18,
+  },
+  pharmacyCardOverlay: {
+    position: 'absolute',
+    bottom: 95, // Bottom nav'ın hemen üstünde
+    left: 20,
+    right: 20,
+  },
+  pharmacyCard: {
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    borderRadius: 24,
+    padding: 20,
+    shadowColor: '#2e6385',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.15,
+    shadowRadius: 20,
+    elevation: 8,
+  },
+  cardHeader: {
+    marginBottom: 16,
+  },
+  badgeContainer: {
+    backgroundColor: 'rgba(186, 26, 26, 0.1)',
+    alignSelf: 'flex-start',
     paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+    marginBottom: 8,
   },
-  btnPrimaryText: { color: '#fff', fontSize: 12 },
-  btnSecondary: {
-    borderWidth: 0.5,
-    borderColor: '#ccc',
-    borderRadius: 8,
-    paddingVertical: 5,
-    paddingHorizontal: 10,
+  badgeText: {
+    color: '#ba1a1a',
+    fontSize: 10,
+    fontWeight: 'bold',
   },
-  btnSecondaryText: { color: '#444', fontSize: 12 },
+  pharmacyName: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#2e6385',
+    marginBottom: 4,
+  },
+  pharmacyAddress: {
+    fontSize: 13,
+    color: '#71787e',
+  },
+  actionButtonsRow: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  callButton: {
+    flex: 1,
+    flexDirection: 'row',
+    backgroundColor: '#E5F8E8', // Light Green
+    height: 48,
+    borderRadius: 14,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  callButtonText: {
+    color: '#357044',
+    fontSize: 15,
+    fontWeight: 'bold',
+    marginLeft: 6,
+  },
+  shareButton: {
+    flex: 1,
+    flexDirection: 'row',
+    backgroundColor: '#a5d8ff', // Light Blue
+    height: 48,
+    borderRadius: 14,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  shareButtonText: {
+    color: '#285f80',
+    fontSize: 15,
+    fontWeight: 'bold',
+    marginLeft: 6,
+  },
+  bottomNav: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 75,
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    borderTopWidth: 1,
+    borderColor: 'rgba(193, 199, 206, 0.2)',
+    paddingBottom: 10,
+  },
+  navItem: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  navIcon: {
+    fontSize: 20,
+    color: '#71787e',
+    marginBottom: 2,
+  },
+  navLabel: {
+    fontSize: 10,
+    color: '#71787e',
+    fontWeight: '500',
+  },
+  activeNavText: {
+    color: '#2e6385',
+    fontWeight: 'bold',
+  }
 });

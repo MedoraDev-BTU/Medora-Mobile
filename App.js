@@ -2,15 +2,15 @@ import React, { useState } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 
-// Component Imports
+// Component Imports (Ekran görüntülerindeki klasör yapısına göre)
 import LoginScreen from './src/screens/auth/LoginScreen';
 import SignupScreen from './src/screens/auth/SignupScreen';
-import MainTabs from './src/navigation/MainTabs';
+import MainTabs from './src/navigation/MainTabs'; // MainTabs'ın navigation klasöründe olduğunu varsayıyoruz
 
 const Stack = createStackNavigator();
 
 export default function App() {
-  const [user, setUser] = useState(null); // Track user session
+  const [user, setUser] = useState(null); // Kullanıcı oturumunu takip eder
 
   return (
     <NavigationContainer>
